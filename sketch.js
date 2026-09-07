@@ -21,6 +21,8 @@ const cleanPageCount = 5;
 // 22 native points + 3 split-child points per page, across 5 pages.
 const cleanScoreCap = 125;
 let cleanNativeRemaining = 0;
+let cleanTransitionWaiting = false;
+let cleanTransitionStartedAt = 0;
 let isSettingPopupOpen = false;
 let gameCanvas = null;
 let challengePaused = false;
@@ -100,9 +102,21 @@ function draw() {
     if (!challengePaused) particles[i].update(); particles[i].draw();
     if (particles[i].isDead()) particles.splice(i, 1);
   }
-  if (advancedMode && !challengePaused && challengeMode === 'clean' && !cleanRoundOver && cleanNativeRemaining <= 0) {
-    bubbles = [];
-    if (cleanPage < cleanPageCount) spawnCleanPage(); else endCleanRound();
+  if (advancedMode && !challengePaused && challengeMode === 'clean' && !cleanRoundOver) {
+    // Native bubbles may be gone before their burst fragments finish. Keep the
+    // page transition in a waiting state so the visual effect can complete.
+    if (!cleanTransitionWaiting && cleanNativeRemaining <= 0) {
+      cleanTransitionWaiting = true;
+      cleanTransitionStartedAt = millis();
+      bubbles = [];
+    }
+
+    const waitingTooLong = millis() - cleanTransitionStartedAt >= 1200;
+    if (cleanTransitionWaiting && bubbles.length === 0 &&
+        (particles.length === 0 || waitingTooLong)) {
+      cleanTransitionWaiting = false;
+      if (cleanPage < cleanPageCount) spawnCleanPage(); else endCleanRound();
+    }
   }
 }
 
@@ -220,10 +234,11 @@ function openExitConfirm() {
   document.getElementById('pause-overlay').classList.add('is-hidden');
 }
 
-function startCleanRound() { if (homeSpawnTimer) clearTimeout(homeSpawnTimer); advancedMode = true; challengePaused = false; bubbles = []; particles = []; score = 0; cleanPage = 0; cleanNativeRemaining = 0; cleanRoundOver = false; cleanRoundEndsAt = millis() + 30000; document.getElementById('round-summary').classList.add('is-hidden'); document.getElementById('pause-overlay').classList.add('is-hidden'); document.getElementById('challenge-home-copy').classList.add('is-hidden'); document.getElementById('bubble-guide').classList.add('is-hidden'); document.getElementById('challenge-controls').classList.remove('is-hidden'); spawnCleanPage(); }
+function startCleanRound() { if (homeSpawnTimer) clearTimeout(homeSpawnTimer); advancedMode = true; challengePaused = false; bubbles = []; particles = []; score = 0; cleanPage = 0; cleanNativeRemaining = 0; cleanTransitionWaiting = false; cleanTransitionStartedAt = 0; cleanRoundOver = false; cleanRoundEndsAt = millis() + 30000; document.getElementById('round-summary').classList.add('is-hidden'); document.getElementById('pause-overlay').classList.add('is-hidden'); document.getElementById('challenge-home-copy').classList.add('is-hidden'); document.getElementById('bubble-guide').classList.add('is-hidden'); document.getElementById('challenge-controls').classList.remove('is-hidden'); spawnCleanPage(); }
 function spawnCleanPage() {
   if (!advancedMode || challengeMode !== 'clean' || cleanRoundOver || cleanPage >= cleanPageCount) return;
   cleanPage++;
+  cleanTransitionWaiting = false;
   const types = ['normal','normal','normal','normal','normal','normal','normal','normal','normal','normal','short','short','short','split','split','split'];
   cleanNativeRemaining = types.length;
   types.forEach(type => bubbles.push(new Bubble(random(width * .12, width * .88), random(height * .2, height * .82), true, type)));
@@ -291,6 +306,7 @@ class Bubble {
     this.highlightX = random(-.46, -.22);
     this.highlightY = random(-.48, -.22);
     this.pageNative = forced;
+    this.pageCounted = false;
     this.special = specialOverride || (advancedMode && !forced ? this.chooseSpecial() : 'normal');
     this.maxLife = Infinity;
     if (advancedMode) {
@@ -367,9 +383,6 @@ class Bubble {
     if (this.isPopped) return;
     // A challenge page advances only after the player manually pops every
     // native bubble; natural expiry must never count as a clear.
-    if (this.pageNative && advancedMode && challengeMode === 'clean' && manual) {
-      cleanNativeRemaining = max(0, cleanNativeRemaining - 1);
-    }
     this.isPopped = true; this.popScale = 1.15; this.popGlow = 1.2;
     if (advancedMode && manual) {
       if (challengeMode === 'clean') score = min(cleanScoreCap, score + (this.special === 'normal' ? 1 : 2));
@@ -388,7 +401,15 @@ class Bubble {
     this.fragmentSpawned = true;
     for (let i = 0; i < floor(random(6, 9)); i++) particles.push(new BurstBubble(this.x, this.y, this.r, structuredClone(originalColor)));
   }
-  isDead() { return this.isPopped && this.popScale < .06; }
+  isDead() {
+    const dead = this.isPopped && this.popScale < .06;
+    if (dead && this.pageNative && advancedMode && challengeMode === 'clean' && !this.pageCounted) {
+      // Release the page slot only after the bubble is fully gone—never at pop start.
+      cleanNativeRemaining = max(0, cleanNativeRemaining - 1);
+      this.pageCounted = true;
+    }
+    return dead;
+  }
 }
 
 class ChildBubble {
