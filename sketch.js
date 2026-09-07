@@ -31,6 +31,9 @@ let homeSpawnTimer = null;
 let homeInitialSpawned = false;
 let previewType = 'normal';
 
+const SUPABASE_URL = 'https://gaihknwzmc dtuutcarbh.supabase.co'.replace(' ', '');
+const SUPABASE_KEY = 'sb_publishable_i4dbGnb_YJqKH7WnSOY8aQ_ro_mFGFV';
+
 const palette = [
   [244, 167, 185], // pink
   [143, 211, 190], // mint
@@ -218,6 +221,49 @@ function setupChallengeUI() {
     if (challengePaused) pauseOverlay.classList.remove('is-hidden');
   });
   document.getElementById('back-home').addEventListener('click', exitChallenge);
+  document.getElementById('submit-score').addEventListener('click', submitLeaderboardScore);
+}
+
+async function submitLeaderboardScore() {
+  const nameInput = document.getElementById('leaderboard-name');
+  const status = document.getElementById('leaderboard-status');
+  const name = nameInput.value.trim() || 'ANONYMOUS';
+  const button = document.getElementById('submit-score');
+  button.disabled = true;
+  status.textContent = 'SUBMITTING...';
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ nickname: name.slice(0, 18), score: Math.min(score, cleanScoreCap), mode: 'clean' })
+    });
+    if (!response.ok) throw new Error('submit failed');
+    status.textContent = 'SCORE SUBMITTED';
+    nameInput.disabled = true;
+    await loadLeaderboard();
+  } catch (error) {
+    status.textContent = 'SUBMIT FAILED · CHECK SUPABASE';
+    button.disabled = false;
+  }
+}
+
+async function loadLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  list.textContent = 'LOADING LEADERBOARD...';
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=nickname,score,created_at&mode=eq.clean&order=score.desc,created_at.asc&limit=10`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    if (!response.ok) throw new Error('load failed');
+    const rows = await response.json();
+    list.innerHTML = rows.length ? rows.map((row, index) => `${index + 1}. ${escapeHtml(row.nickname)} — ${row.score}`).join('<br>') : 'NO SCORES YET';
+  } catch (error) {
+    list.textContent = 'LEADERBOARD UNAVAILABLE';
+  }
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 }
 
 function exitChallenge() {
@@ -255,6 +301,12 @@ function endCleanRound() {
   document.getElementById('summary-kicker').textContent = score >= cleanScoreCap ? 'PERFECT!' : (score > previousBest ? 'NEW RECORD!' : "TIME'S UP!");
   document.getElementById('summary-title').textContent = `SCORE ${score} / ${cleanScoreCap}`;
   document.getElementById('summary-best').textContent = `BEST ${highScore}`;
+  document.getElementById('leaderboard-entry').classList.remove('is-hidden');
+  document.getElementById('leaderboard-name').value = '';
+  document.getElementById('leaderboard-name').disabled = false;
+  document.getElementById('submit-score').disabled = false;
+  document.getElementById('leaderboard-status').textContent = '';
+  loadLeaderboard();
   document.getElementById('round-summary').classList.remove('is-hidden');
 }
 function refreshPreview() { previewType = random(['normal', 'normal', 'normal', 'gold', 'ice', 'split']); const el = document.getElementById('preview-bubble'); const colors = { normal: 'rgba(244,167,185,.7)', gold: 'rgba(244,202,105,.8)', ice: 'rgba(147,211,236,.8)', split: 'rgba(139,215,184,.8)' }; el.style.background = colors[previewType]; }
