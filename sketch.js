@@ -105,7 +105,11 @@ function draw() {
   if (advancedMode && !challengePaused && challengeMode === 'clean' && !cleanRoundOver) {
     // Native bubbles may be gone before their burst fragments finish. Keep the
     // page transition in a waiting state so the visual effect can complete.
-    if (!cleanTransitionWaiting && cleanNativeRemaining <= 0) {
+    // Derive the condition from the live page-native objects as well as the
+    // counter. This covers natural lifetime expiry, which does not pass
+    // through the player's click handler.
+    const nativeBubblesRemaining = bubbles.some(bubble => bubble.pageNative);
+    if (!cleanTransitionWaiting && cleanNativeRemaining <= 0 && !nativeBubblesRemaining) {
       cleanTransitionWaiting = true;
       cleanTransitionStartedAt = millis();
       bubbles = [];
