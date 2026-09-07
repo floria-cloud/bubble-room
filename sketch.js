@@ -365,7 +365,11 @@ class Bubble {
   pop(manual = false) {
     const burstParticleColor = structuredClone(this.color);
     if (this.isPopped) return;
-    if (this.pageNative && advancedMode && challengeMode === 'clean') cleanNativeRemaining = max(0, cleanNativeRemaining - 1);
+    // A challenge page advances only after the player manually pops every
+    // native bubble; natural expiry must never count as a clear.
+    if (this.pageNative && advancedMode && challengeMode === 'clean' && manual) {
+      cleanNativeRemaining = max(0, cleanNativeRemaining - 1);
+    }
     this.isPopped = true; this.popScale = 1.15; this.popGlow = 1.2;
     if (advancedMode && manual) {
       if (challengeMode === 'clean') score = min(cleanScoreCap, score + (this.special === 'normal' ? 1 : 2));
