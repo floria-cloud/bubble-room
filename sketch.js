@@ -254,12 +254,12 @@ async function loadLeaderboard() {
   const list = document.getElementById('leaderboard-list');
   list.textContent = 'LOADING LEADERBOARD...';
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=nickname,popped_count,completion_time_ms,created_at&mode=eq.clean&order=popped_count.desc,completion_time_ms.asc,created_at.asc&limit=10`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=nickname,score,completion_time_ms,created_at&mode=eq.clean&order=score.desc,completion_time_ms.asc,created_at.asc&limit=10`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
     if (!response.ok) throw new Error('load failed');
     const rows = await response.json();
-    list.innerHTML = rows.length ? rows.map((row, index) => `${index + 1}. ${escapeHtml(row.nickname)} — ${row.popped_count} BUBBLES · ${(row.completion_time_ms / 1000).toFixed(1)}s`).join('<br>') : 'NO SCORES YET';
+    list.innerHTML = rows.length ? rows.map((row, index) => `${index + 1}. ${escapeHtml(row.nickname)} — ${row.score} POINTS · ${(row.completion_time_ms / 1000).toFixed(1)}s`).join('<br>') : 'NO SCORES YET';
   } catch (error) {
     list.textContent = 'LEADERBOARD UNAVAILABLE';
   }
