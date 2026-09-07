@@ -61,8 +61,13 @@ function drawAmbient() {
 function recalculateBubbleRadius() {
   const shortSide = min(width, height);
   const mobile = window.matchMedia('(max-width:768px)').matches;
-  minRadius = shortSide * (mobile ? .085 : .13);
-  maxRadius = shortSide * (mobile ? .16 : .23);
+  if (mobile) {
+    minRadius = shortSide * .07;
+    maxRadius = min(shortSide * .125, width * .14); // diameter <= 28vw
+  } else {
+    minRadius = shortSide * .13;
+    maxRadius = shortSide * .23;
+  }
 }
 
 function aliveBubbleAreaRatio() {
