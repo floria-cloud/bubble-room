@@ -16,6 +16,13 @@
         <span>BUBBLE ROOM</span>
       </div>
       <div class="status" aria-hidden="true"><span class="status-dot"></span><span>just breathe</span></div>
+      <div id="score-display" class="score-display is-hidden"></div>
+      <section id="round-summary" class="round-summary is-hidden">
+        <div class="summary-card"><div class="summary-kicker" id="summary-kicker">TIME'S UP!</div><h2 id="summary-title">SCORE 0 / 110</h2><p id="summary-best">BEST 0</p><button id="play-again" type="button">PLAY AGAIN</button><button id="back-home" type="button">BACK TO HOME</button></div>
+      </section>
+      <section id="pause-overlay" class="round-summary is-hidden"><div class="summary-card"><div class="summary-kicker">PAUSED</div><h2>TAKE A BREATH</h2><button id="resume-button" type="button">RESUME</button><button id="pause-exit-button" type="button">EXIT</button></div></section>
+      <section id="exit-confirm" class="round-summary is-hidden"><div class="summary-card"><div class="summary-kicker">LEAVE CHALLENGE?</div><h2>YOUR RUN WILL END</h2><button id="confirm-exit" type="button">CONFIRM EXIT</button><button id="cancel-exit" type="button">CANCEL</button></div></section>
+      <section id="home-challenge-cta" class="home-challenge-cta"><svg id="bubble-guide" class="bubble-guide" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="mintBubble" cx="32%" cy="25%"><stop offset="0" stop-color="#ffffff" stop-opacity=".92"/><stop offset=".2" stop-color="#d9fff2" stop-opacity=".72"/><stop offset="1" stop-color="#91d8c5" stop-opacity=".34"/></radialGradient></defs><circle cx="50" cy="50" r="38" fill="url(#mintBubble)" stroke="#ffffff" stroke-opacity=".7"/><circle cx="36" cy="34" r="8" fill="#ffffff" fill-opacity=".86"/><circle cx="30" cy="27" r="3" fill="#ffffff" fill-opacity=".9"/></svg><div id="challenge-home-copy"><p>Challenge: Pop as many bubbles as you can in 30 seconds.<br />3 difficulty-weighted bubble types, up to 5 rounds.</p><button id="start-challenge" type="button">START CHALLENGE</button></div><div id="challenge-controls" class="challenge-controls is-hidden"><button id="pause-button" type="button">PAUSE</button><button id="exit-button" type="button">EXIT</button></div></section>
       <div id="canvas-wrap"></div>
       <section class="intro" aria-hidden="true">
         <p class="eyebrow">A tiny room for a quiet moment</p>

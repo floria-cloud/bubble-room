@@ -7,7 +7,7 @@ body { cursor: crosshair; }
 .brand, .status, .intro, .instructions { position: absolute; z-index: 2; pointer-events: none; }
 .brand { top: 27px; left: 34px; display: flex; align-items: center; gap: 10px; color: rgba(68,83,91,.78); font: 500 11px/1 'DM Mono', monospace; letter-spacing: .17em; }
 .brand-mark { font: 300 24px/0 'Manrope', sans-serif; color: #8ccbc4; transform: translateY(-1px); }
-.status { top: 29px; right: 35px; display: flex; align-items: center; gap: 8px; color: rgba(68,83,91,.48); font: 400 10px/1 'DM Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
+.status { top: 27px; right: 68px; display: flex; align-items: center; gap: 8px; color: rgba(68,83,91,.48); font: 400 10px/1 'DM Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #8bcfc0; box-shadow: 0 0 12px #8bcfc0; }
 .intro { left: clamp(28px, 8vw, 120px); top: 25%; }
 .eyebrow { margin: 0 0 18px; color: rgba(68,83,91,.48); font: 400 11px/1.2 'DM Mono', monospace; letter-spacing: .13em; text-transform: uppercase; }
@@ -16,4 +16,47 @@ h1 em { color: #e598a7; font-style: normal; }
 .instructions { bottom: 27px; left: 50%; display: flex; gap: 14px; align-items: center; transform: translateX(-50%); white-space: nowrap; color: rgba(68,83,91,.48); font: 400 10px/1 'DM Mono', monospace; letter-spacing: .06em; }
 .instructions b { color: rgba(68,83,91,.76); font-weight: 500; }
 .divider { color: rgba(68,83,91,.25); }
-@media (max-width: 600px) { .brand { left: 20px; top: 20px; } .status { right: 20px; top: 22px; } .intro { top: 19%; left: 25px; } .instructions { bottom: 20px; gap: 8px; font-size: 8px; } .divider { display: none; } }
+#settings-toggle { position: absolute; z-index: 5; top: 19px; right: 22px; width: 31px; height: 31px; border: 1px solid rgba(93,126,132,.2); border-radius: 50%; color: rgba(68,83,91,.58); background: rgba(255,255,250,.55); font-size: 17px; cursor: pointer; }
+.settings-panel { position: absolute; z-index: 4; top: 58px; right: 22px; width: 218px; padding: 16px; border: 1px solid rgba(93,126,132,.18); border-radius: 16px; color: rgba(68,83,91,.78); background: rgba(255,255,250,.88); box-shadow: 0 12px 35px rgba(94,129,135,.14); font: 10px 'DM Mono', monospace; opacity: 0; pointer-events: none; transform: translateY(-6px); transition: .2s ease; }
+.settings-panel.is-open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.settings-title { margin-bottom: 14px; letter-spacing: .12em; color: rgba(68,83,91,.48); }
+.switch-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.switch-row input { display: none; }
+.switch-row i { width: 33px; height: 18px; border-radius: 10px; background: #d6e1df; position: relative; }
+.switch-row i::after { content: ''; position: absolute; width: 14px; height: 14px; top: 2px; left: 2px; border-radius: 50%; background: white; transition: .2s; }
+.switch-row input:checked + i { background: #9acfc2; }
+.switch-row input:checked + i::after { left: 17px; }
+.advanced-options { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(93,126,132,.12); }
+.mode-label { margin-bottom: 9px; color: rgba(68,83,91,.48); }
+.mode-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+.mode-button { border: 1px solid rgba(93,126,132,.18); border-radius: 8px; padding: 6px 7px; color: rgba(68,83,91,.62); background: transparent; font: 9px 'DM Mono', monospace; cursor: pointer; }
+.mode-button.active { color: #467c73; border-color: #9acfc2; background: #e5f3ef; }
+.is-hidden { display: none; }
+.score-display { position: absolute; z-index: 2; top: 48px; right: 68px; color: rgba(68,83,91,.62); font: 10px/1.5 'DM Mono', monospace; letter-spacing: .04em; pointer-events: none; text-align: right; }
+.challenge-controls { position: relative; z-index: 5; display: flex; justify-content: flex-end; gap: 6px; }
+.challenge-controls.is-hidden, #challenge-home-copy.is-hidden { display: none; }
+.challenge-controls button, #resume-button, #pause-exit-button { border: 1px solid rgba(93,126,132,.24); border-radius: 9px; padding: 8px 11px; color: rgba(68,83,91,.68); background: rgba(255,255,250,.72); font: 500 9px 'DM Mono', monospace; cursor: pointer; }
+.challenge-controls button, #resume-button, #pause-exit-button, #confirm-exit, #cancel-exit { border: 1px solid rgba(93,126,132,.24); border-radius: 9px; padding: 8px 11px; color: rgba(68,83,91,.68); background: rgba(255,255,250,.72); font: 500 9px 'DM Mono', monospace; cursor: pointer; transition: transform .18s ease, background .18s ease; }
+#confirm-exit:hover, #cancel-exit:hover, #resume-button:hover, #pause-exit-button:hover { transform: scale(1.04); background: rgba(255,255,255,.95); }
+.challenge-controls button { border-radius: 999px; transition: transform .18s ease, background .18s ease; }
+.challenge-controls button:hover { transform: scale(1.05); background: rgba(255,255,255,.95); }
+.home-challenge-cta { position: absolute; z-index: 3; right: 28px; bottom: 24px; text-align: right; color: rgba(68,83,91,.48); }
+.bubble-guide { position: absolute; right: 172px; bottom: 30px; width: 48px; height: 48px; opacity: .72; pointer-events: none; animation: guideFloat 5.8s ease-in-out infinite; transform-origin: center; }
+@keyframes guideFloat { 0%, 100% { transform: translate(0, 3px) rotate(-5deg); } 35% { transform: translate(12px, -9px) rotate(5deg); } 68% { transform: translate(20px, 5px) rotate(9deg); } }
+.home-challenge-cta p { margin: 0 0 9px; font: 9px/1.5 'DM Mono', monospace; }
+#start-challenge { border: 1px solid #83c7b5; border-radius: 12px; padding: 13px 18px; color: #356f66; background: rgba(221,246,238,.96); box-shadow: 0 8px 22px rgba(80,145,128,.18); font: 600 10px 'DM Mono', monospace; letter-spacing: .04em; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+#start-challenge:hover { transform: translateY(-2px); box-shadow: 0 11px 27px rgba(80,145,128,.25); }
+.round-summary { position: absolute; z-index: 6; inset: 0; display: grid; place-items: center; background: rgba(244,246,239,.32); }
+.round-summary.is-hidden { display: none; }
+.summary-card { min-width: 250px; padding: 28px 30px; border: 1px solid rgba(93,126,132,.2); border-radius: 20px; text-align: center; color: rgba(68,83,91,.8); background: rgba(255,255,250,.9); box-shadow: 0 18px 50px rgba(94,129,135,.16); }
+.summary-kicker { color: #e598a7; font: 500 11px 'DM Mono', monospace; letter-spacing: .12em; }
+.summary-card h2 { margin: 13px 0 7px; font: 600 19px Manrope, sans-serif; }
+.summary-card p { margin: 0 0 22px; color: rgba(68,83,91,.5); font: 11px 'DM Mono', monospace; }
+#play-again, #back-home { border: 1px solid #9acfc2; border-radius: 10px; padding: 10px 14px; color: #467c73; background: #e5f3ef; font: 500 10px 'DM Mono', monospace; cursor: pointer; }
+#back-home { margin-left: 6px; color: rgba(68,83,91,.62); border-color: rgba(93,126,132,.22); background: rgba(255,255,250,.7); }
+.mode-hint { margin: 12px 0 0; color: rgba(68,83,91,.5); font: 9px/1.5 Manrope, sans-serif; }
+.merge-preview { position: absolute; z-index: 2; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 9px; color: rgba(68,83,91,.52); font: 9px 'DM Mono', monospace; pointer-events: none; }
+#preview-bubble { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.8); background: rgba(244,167,185,.7); box-shadow: inset 5px 4px rgba(255,255,255,.75), 0 4px 13px rgba(94,129,135,.16); }
+@media (max-width: 600px) { .brand { left: 20px; top: 20px; } .status { right: 54px; top: 22px; font-size: 8px; } .intro { top: 19%; left: 25px; } .instructions { bottom: 20px; gap: 8px; font-size: 8px; } .divider { display: none; } .score-display { top: 42px; right: 54px; font-size: 8px; } .settings-panel { right: 14px; width: min(218px, calc(100vw - 28px)); } }
+@media (max-width: 600px) { .home-challenge-cta { right: 16px; bottom: 20px; } .home-challenge-cta p { font-size: 8px; } .bubble-guide { right: 148px; bottom: 28px; width: 38px; height: 38px; } }
+@media (max-width: 600px) { .summary-card { min-width: 0; width: calc(100vw - 40px); padding: 24px 16px; } #play-again, #back-home { margin: 3px 2px; padding: 10px 11px; font-size: 9px; } }
