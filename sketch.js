@@ -18,7 +18,8 @@ let cleanRoundEndsAt = 0;
 let cleanRoundOver = false;
 let cleanPage = 0;
 const cleanPageCount = 5;
-const cleanScoreCap = 110;
+// 22 native points + 3 split-child points per page, across 5 pages.
+const cleanScoreCap = 125;
 let cleanNativeRemaining = 0;
 let isSettingPopupOpen = false;
 let gameCanvas = null;
