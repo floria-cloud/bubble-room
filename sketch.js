@@ -10,6 +10,9 @@ let prevMouseY = 0;
 let advancedMode = false;
 let challengeMode = 'clean';
 let score = 0;
+let poppedCount = 0;
+let cleanRoundStartedAt = 0;
+let completionTimeMs = 0;
 // BEST is intentionally session-memory only; a refresh starts it at zero.
 let highScore = 0;
 let nextEventAt = 0;
@@ -235,7 +238,7 @@ async function submitLeaderboardScore() {
     const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
       method: 'POST',
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ nickname: name.slice(0, 18), score: Math.min(score, cleanScoreCap), mode: 'clean' })
+      body: JSON.stringify({ nickname: name.slice(0, 18), score: Math.min(score, cleanScoreCap), popped_count: poppedCount, completion_time_ms: completionTimeMs, mode: 'clean' })
     });
     if (!response.ok) throw new Error('submit failed');
     status.textContent = 'SCORE SUBMITTED';
@@ -251,12 +254,12 @@ async function loadLeaderboard() {
   const list = document.getElementById('leaderboard-list');
   list.textContent = 'LOADING LEADERBOARD...';
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=nickname,score,created_at&mode=eq.clean&order=score.desc,created_at.asc&limit=10`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=nickname,popped_count,completion_time_ms,created_at&mode=eq.clean&order=popped_count.desc,completion_time_ms.asc,created_at.asc&limit=10`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
     if (!response.ok) throw new Error('load failed');
     const rows = await response.json();
-    list.innerHTML = rows.length ? rows.map((row, index) => `${index + 1}. ${escapeHtml(row.nickname)} — ${row.score}`).join('<br>') : 'NO SCORES YET';
+    list.innerHTML = rows.length ? rows.map((row, index) => `${index + 1}. ${escapeHtml(row.nickname)} — ${row.popped_count} BUBBLES · ${(row.completion_time_ms / 1000).toFixed(1)}s`).join('<br>') : 'NO SCORES YET';
   } catch (error) {
     list.textContent = 'LEADERBOARD UNAVAILABLE';
   }
@@ -284,7 +287,7 @@ function openExitConfirm() {
   document.getElementById('pause-overlay').classList.add('is-hidden');
 }
 
-function startCleanRound() { if (homeSpawnTimer) clearTimeout(homeSpawnTimer); advancedMode = true; challengePaused = false; bubbles = []; particles = []; score = 0; cleanPage = 0; cleanNativeRemaining = 0; cleanTransitionWaiting = false; cleanTransitionStartedAt = 0; cleanRoundOver = false; cleanRoundEndsAt = millis() + 30000; document.getElementById('round-summary').classList.add('is-hidden'); document.getElementById('pause-overlay').classList.add('is-hidden'); document.getElementById('challenge-home-copy').classList.add('is-hidden'); document.getElementById('bubble-guide').classList.add('is-hidden'); document.getElementById('challenge-controls').classList.remove('is-hidden'); spawnCleanPage(); }
+function startCleanRound() { if (homeSpawnTimer) clearTimeout(homeSpawnTimer); advancedMode = true; challengePaused = false; bubbles = []; particles = []; score = 0; poppedCount = 0; completionTimeMs = 0; cleanRoundStartedAt = millis(); cleanPage = 0; cleanNativeRemaining = 0; cleanTransitionWaiting = false; cleanTransitionStartedAt = 0; cleanRoundOver = false; cleanRoundEndsAt = millis() + 30000; document.getElementById('round-summary').classList.add('is-hidden'); document.getElementById('pause-overlay').classList.add('is-hidden'); document.getElementById('challenge-home-copy').classList.add('is-hidden'); document.getElementById('bubble-guide').classList.add('is-hidden'); document.getElementById('challenge-controls').classList.remove('is-hidden'); spawnCleanPage(); }
 function spawnCleanPage() {
   if (!advancedMode || challengeMode !== 'clean' || cleanRoundOver || cleanPage >= cleanPageCount) return;
   cleanPage++;
@@ -295,6 +298,7 @@ function spawnCleanPage() {
 }
 function endCleanRound() {
   if (cleanRoundOver) return;
+  completionTimeMs = Math.min(30000, Math.max(0, millis() - cleanRoundStartedAt));
   const previousBest = highScore;
   cleanRoundOver = true; score = min(score, cleanScoreCap); highScore = max(highScore, score);
   challengePaused = false; document.getElementById('challenge-controls').classList.add('is-hidden'); document.getElementById('challenge-home-copy').classList.add('is-hidden');
@@ -441,6 +445,7 @@ class Bubble {
     // native bubble; natural expiry must never count as a clear.
     this.isPopped = true; this.popScale = 1.15; this.popGlow = 1.2;
     if (advancedMode && manual) {
+      if (challengeMode === 'clean') poppedCount++;
       if (challengeMode === 'clean') score = min(cleanScoreCap, score + (this.special === 'normal' ? 1 : 2));
       highScore = max(highScore, score);
     }
