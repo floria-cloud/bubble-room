@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bubble Room · 泡泡房间</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main id="app">
+      <div class="brand" aria-hidden="true">
+        <span class="brand-mark">○</span>
+        <span>BUBBLE ROOM</span>
+      </div>
+      <div class="status" aria-hidden="true"><span class="status-dot"></span><span>just breathe</span></div>
+      <div id="canvas-wrap"></div>
+      <section class="intro" aria-hidden="true">
+        <p class="eyebrow">A tiny room for a quiet moment</p>
+        <h1>Let it float.<br /><em>Let it go.</em></h1>
+      </section>
+      <div class="instructions" aria-hidden="true">
+        <span><b>CLICK</b> to make a bubble</span>
+        <span class="divider">·</span>
+        <span><b>MOVE</b> to pop</span>
+        <span class="divider">·</span>
+        <span><b>SPACE</b> to clear</span>
+      </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+    <script src="sketch.js"></script>
+  </body>
+</html>
