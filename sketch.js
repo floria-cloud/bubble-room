@@ -1,7 +1,10 @@
 let bubbles = [];
 let particles = [];
 let stars = [];
-const maxBubbleCount = 12;
+const maxBubbleCount = 22;
+const areaBurstThreshold = .68;
+let minRadius = 90;
+let maxRadius = 160;
 let prevMouseX = 0;
 let prevMouseY = 0;
 
@@ -19,6 +22,7 @@ function setup() {
   canvas.parent('canvas-wrap');
   pixelDensity(Math.min(window.devicePixelRatio || 1, 2));
   noStroke();
+  recalculateBubbleRadius();
   for (let i = 0; i < 90; i++) stars.push({ x: random(width), y: random(height), r: random(.3, 1.4), a: random(18, 70) });
 }
 
@@ -54,6 +58,25 @@ function drawAmbient() {
   fill(177, 225, 223, 13); circle(width * .12, height * .82, min(width, height) * .58);
 }
 
+function recalculateBubbleRadius() {
+  const shortSide = min(width, height);
+  const mobile = window.matchMedia('(max-width:768px)').matches;
+  minRadius = shortSide * (mobile ? .085 : .13);
+  maxRadius = shortSide * (mobile ? .16 : .23);
+}
+
+function aliveBubbleAreaRatio() {
+  const occupiedArea = bubbles.reduce((sum, bubble) => {
+    return sum + (bubble.isPopped ? 0 : PI * bubble.r * bubble.r);
+  }, 0);
+  return occupiedArea / (width * height);
+}
+
+function shouldCollectivePop() {
+  const aliveCount = bubbles.filter(b => !b.isPopped).length;
+  return aliveCount > maxBubbleCount || aliveBubbleAreaRatio() >= areaBurstThreshold;
+}
+
 function resolveBubbleCollision(a, b) {
   if (a.isPopped || b.isPopped) return;
   const dx = b.x - a.x, dy = b.y - a.y;
@@ -78,9 +101,9 @@ function resolveBubbleCollision(a, b) {
 class Bubble {
   constructor(x, y) {
     this.x = x; this.y = y; this.baseX = x;
-    this.r = random(90, 160);
+    this.r = random(minRadius, maxRadius);
     // Smaller bubbles drift a little faster; larger ones rise more slowly.
-    this.speedY = map(this.r, 90, 160, -.35, -.15) + random(-.025, .025);
+    this.speedY = map(this.r, minRadius, maxRadius, -.35, -.15) + random(-.025, .025);
     this.wind = random(-.3, .3);
     this.turbulence = random(-.05, .05);
     this.color = random(palette);
@@ -178,7 +201,10 @@ function mousePressed() {
   else {
     const aliveCount = bubbles.filter(b => !b.isPopped).length;
     if (aliveCount >= maxBubbleCount) collectivePop();
-    else bubbles.push(new Bubble(mouseX, mouseY));
+    else {
+      bubbles.push(new Bubble(mouseX, mouseY));
+      if (shouldCollectivePop()) collectivePop();
+    }
   }
   return false;
 }
@@ -213,4 +239,4 @@ function collectivePop() {
     particles.push(new CelebrationParticle(random(width), random(height), random(palette)));
   }
 }
-function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+function windowResized() { resizeCanvas(windowWidth, windowHeight); recalculateBubbleRadius(); }
